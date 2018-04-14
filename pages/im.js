@@ -1,15 +1,13 @@
 'use strict';
 
-/* eslint-disable no-undef */
-
-import fetch from 'node-fetch';
-
 import React, { Component } from 'react';
+// import PropTypes from 'prop-types';
 
 import Header from '../blocks/chats-page/Header';
 import Chats from '../blocks/chats-page/Chats';
 import ChatWindow from '../blocks/chats-page/ChatWindow';
 
+import 'isomorphic-fetch';
 import './global-const.css';
 import './im.css';
 
@@ -19,13 +17,14 @@ export default class ProfilePage extends Component {
     state = {
         chats: null,
         user: null,
-        chatProps: null
+        chatProps: null,
+        currentChat: null
     };
 
     click = chatProps => this.setState({ chatProps });
 
     changeLastMessage = (id, msg) => {
-        const { chats } = this.state.chats;
+        const { chats } = this.state;
 
         chats.forEach(chat => {
             if (chat.id === id) {
@@ -53,19 +52,31 @@ export default class ProfilePage extends Component {
         }
     }
 
+    componentDidMount() {
+        const value = localStorage.getItem('test');
+
+        /* eslint-disable-next-line react/no-did-mount-set-state */
+        this.setState({
+            currentChat: value
+        });
+    }
+
     render() {
         const { chats, user, chatProps } = this.state;
 
         return (
             <React.Fragment>
                 <Header />
+                <div>
+                    {this.state.currentChat}
+                </div>
                 <main className="main">
                     <article className="chats">
                         <div className="chats__search">
                             <input
                                 type="text"
-                                placeholder="Найти пользователя по id..."
                                 className="chats__search-input"
+                                placeholder="Найти пользователя по id..."
                                 onKeyPress={this.searchUser}
                             />
                         </div>
@@ -73,13 +84,11 @@ export default class ProfilePage extends Component {
                             <Chats chatsList={chats} click={this.click} />
                         </div>
                     </article>
-                    <article className="dialog">
-                        <ChatWindow
-                            user={user}
-                            chatProps={chatProps}
-                            changeLastMessage={this.changeLastMessage}
-                        />
-                    </article>
+                    <ChatWindow
+                        user={user}
+                        chatProps={chatProps}
+                        changeLastMessage={this.changeLastMessage}
+                    />
                 </main>
             </React.Fragment>
         );
@@ -88,7 +97,7 @@ export default class ProfilePage extends Component {
 
 // здесь линтер даже с дизейблом ругается на async/await,
 // хотя у Гоголева ТАКОЙ ЖЕ КОМЬЮТЕР И ВСЕ РАБОТАЕТ
-ProfilePage.getInitialProps = async ({ req }) => {
+ProfilePage.т = async ({ req }) => {
     const { user } = req;
 
     const response = await fetch(`${URL}/api/chats`, {
@@ -103,6 +112,9 @@ ProfilePage.getInitialProps = async ({ req }) => {
     return { chats, user };
 };
 
+// Перекладываем в state сразу из props
 ProfilePage.getDerivedStateFromProps = ({ chats, user }) => {
     return { chats, user };
 };
+
+ProfilePage.propTypes = { };
